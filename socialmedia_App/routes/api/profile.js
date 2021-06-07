@@ -7,8 +7,6 @@ const { check, validationResult } = require('express-validator');
 const Profile = require('../../models/Profiles')
 const User = require('../../models/User');
 const Post = require('../../models/Post');
-const { json } = require('express');
-
 
 // Get @route api/profile/me
 // Get the current user profile
@@ -79,21 +77,20 @@ router.post('/', [auth, [
         if (instagram) profileFields.social.instagram = instagram;
         if (facebook) profileFields.social.facebook = facebook;
 
-
         try {
             let profile = await Profile.findOne({ user: req.user.id })
 
             if (profile) {
-                // Update needed
+
+                // Update profile
                 profile = await Profile.findOneAndUpdate({ user: req.user.id },
                     { $set: profileFields },
                     { new: true });
                 return res.json(profile)
             }
 
-            // Need to create
+            // create the object.
             profile = new Profile(profileFields)
-            console.log("hello")
             profile.save()
             res.json(profile)
 
@@ -102,7 +99,6 @@ router.post('/', [auth, [
             res.status(500).send('Server Error')
         }
     })
-
 
 // get @route api/profile
 // get all the profiles
@@ -116,8 +112,6 @@ router.get('/', async (req, res) => {
     }
 })
 
-
-
 // get @route api/profile/user/:user_id
 // get all the profiles
 router.get('/user/:user_id', async (req, res) => {
@@ -129,7 +123,6 @@ router.get('/user/:user_id', async (req, res) => {
         }
         return res.json(profile);
     } catch (err) {
-        console.error(err.message)
         if (err.kind == 'ObjectId') {
             return res.status(400).json({ msg: "there is no such profile" })
         }
@@ -138,12 +131,10 @@ router.get('/user/:user_id', async (req, res) => {
 })
 
 
-
 // delete Profile, user and posts
-    
 router.delete('/', auth, async (req, res) => {
     try {
-        // remove users posts
+        // remove user posts
         await Post.deleteMany({ user: req.user.id })
         // remove profile
         await Profile.findOneAndDelete({ user: req.user.id });
@@ -236,9 +227,6 @@ router.delete('/experience/:exp_id', auth,
         }
 
     })
-
-
-
 
 // put @route api/profile/education
 // updating or adding education
